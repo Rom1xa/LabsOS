@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 
+static long lineno = 1;
+
 typedef struct {
   int number_all;      // -n
   int number_nonblank; // -b
@@ -14,7 +16,6 @@ static void usage(const char *prog) {
 
 static int cat_stream(FILE *fp, const char *name, const Options *opt) {
   int c;
-  long lineno = 1;
   int at_line_start = 1;
   int current_line_nonblank = 0;
 
