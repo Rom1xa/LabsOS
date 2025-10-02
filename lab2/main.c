@@ -43,13 +43,12 @@ void get_permissions(mode_t mode, char *perms) {
 }
 
 const char *get_file_color(mode_t mode) {
-  if (S_ISDIR(mode)) {
+  if (S_ISDIR(mode))
     return BLUE;
-  } else if (S_ISLNK(mode)) {
+  if (S_ISLNK(mode))
     return CYAN;
-  } else if (mode & S_IXUSR || mode & S_IXGRP || mode & S_IXOTH) {
+  if (mode & S_IXUSR || mode & S_IXGRP || mode & S_IXOTH)
     return GREEN;
-  }
   return RESET;
 }
 
@@ -64,33 +63,48 @@ int compare_files(const void *a, const void *b) {
   return strcasecmp(file_a->name, file_b->name);
 }
 
+static const char *user_or_uid(uid_t uid, char *buf, size_t bufsz) {
+  struct passwd *pwd = getpwuid(uid);
+  if (pwd && pwd->pw_name)
+    return pwd->pw_name;
+  snprintf(buf, bufsz, "%lu", (unsigned long)uid);
+  return buf;
+}
+
+static const char *group_or_gid(gid_t gid, char *buf, size_t bufsz) {
+  struct group *grp = getgrgid(gid);
+  if (grp && grp->gr_name)
+    return grp->gr_name;
+  snprintf(buf, bufsz, "%lu", (unsigned long)gid);
+  return buf;
+}
+
 void print_long_format(file_info_t *files, int count) {
   nlink_t max_links = 0;
   off_t max_size = 0;
   char perms[11], time_str[20];
 
   for (int i = 0; i < count; i++) {
-    if (files[i].stat_info.st_nlink > max_links) {
+    if (files[i].stat_info.st_nlink > max_links)
       max_links = files[i].stat_info.st_nlink;
-    }
-    if (files[i].stat_info.st_size > max_size) {
+    if (files[i].stat_info.st_size > max_size)
       max_size = files[i].stat_info.st_size;
-    }
   }
 
   for (int i = 0; i < count; i++) {
     get_permissions(files[i].stat_info.st_mode, perms);
     format_time(files[i].stat_info.st_mtime, time_str);
 
-    struct passwd *pwd = getpwuid(files[i].stat_info.st_uid);
-    struct group *grp = getgrgid(files[i].stat_info.st_gid);
-
-    const char *username = pwd ? pwd->pw_name : "unknown";
-    const char *groupname = grp ? grp->gr_name : "unknown";
+    char ubuf[32], gbuf[32];
+    const char *username =
+        user_or_uid(files[i].stat_info.st_uid, ubuf, sizeof ubuf);
+    const char *groupname =
+        group_or_gid(files[i].stat_info.st_gid, gbuf, sizeof gbuf);
 
     printf("%s %*ld %-8s %-8s %*ld %s ", perms, (int)strlen("1234567890"),
-           files[i].stat_info.st_nlink, username, groupname,
-           (int)strlen("1234567890"), files[i].stat_info.st_size, time_str);
+           (long)files[i].stat_info.st_nlink, username, groupname,
+           (int)strlen("1234567890"), (long)files[i].stat_info.st_size,
+           time_str);
 
     const char *color = get_file_color(files[i].stat_info.st_mode);
     printf("%s%s%s", color, files[i].name, RESET);
@@ -118,9 +132,8 @@ void print_normal_format(file_info_t *files, int count) {
 
     printf("  ");
   }
-  if (count > 0) {
+  if (count > 0)
     printf("\n");
-  }
 }
 
 int process_directory(const char *dir_path) {
@@ -136,10 +149,8 @@ int process_directory(const char *dir_path) {
   }
 
   while ((entry = readdir(dir)) != NULL) {
-    if (!opt_a && entry->d_name[0] == '.') {
+    if (!opt_a && entry->d_name[0] == '.')
       continue;
-    }
-
     if (file_count >= MAX_FILES) {
       fprintf(stderr, "Too many files in directory\n");
       break;
@@ -159,9 +170,8 @@ int process_directory(const char *dir_path) {
 
   closedir(dir);
 
-  if (file_count == 0) {
+  if (file_count == 0)
     return 0;
-  }
 
   qsort(files, file_count, sizeof(file_info_t), compare_files);
 
@@ -205,11 +215,10 @@ int parse_arguments(int argc, char *argv[], char **target_dir) {
     }
   }
 
-  if (optind < argc) {
+  if (optind < argc)
     *target_dir = argv[optind];
-  } else {
+  else
     *target_dir = ".";
-  }
 
   return 0;
 }
@@ -219,14 +228,12 @@ int main(int argc, char *argv[]) {
   int result;
 
   result = parse_arguments(argc, argv, &target_dir);
-  if (result != 0) {
+  if (result != 0)
     return result == 1 ? 0 : 1;
-  }
 
   result = process_directory(target_dir);
-  if (result != 0) {
+  if (result != 0)
     return 1;
-  }
 
   return 0;
 }
