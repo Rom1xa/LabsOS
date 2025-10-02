@@ -82,6 +82,7 @@ static const char *group_or_gid(gid_t gid, char *buf, size_t bufsz) {
 void print_long_format(file_info_t *files, int count) {
   nlink_t max_links = 0;
   off_t max_size = 0;
+  long long total_blocks = 0;
   char perms[11], time_str[20];
 
   for (int i = 0; i < count; i++) {
@@ -89,7 +90,10 @@ void print_long_format(file_info_t *files, int count) {
       max_links = files[i].stat_info.st_nlink;
     if (files[i].stat_info.st_size > max_size)
       max_size = files[i].stat_info.st_size;
+    total_blocks += (long long)files[i].stat_info.st_blocks;
   }
+
+  printf("total %lld\n", total_blocks / 2);
 
   for (int i = 0; i < count; i++) {
     get_permissions(files[i].stat_info.st_mode, perms);
@@ -111,6 +115,14 @@ void print_long_format(file_info_t *files, int count) {
 
     if (S_ISDIR(files[i].stat_info.st_mode)) {
       printf("%s/%s", color, RESET);
+    } else if (S_ISLNK(files[i].stat_info.st_mode)) {
+      char link_target[MAX_PATH];
+      ssize_t n =
+          readlink(files[i].full_path, link_target, sizeof(link_target) - 1);
+      if (n >= 0) {
+        link_target[n] = '\0';
+        printf(" -> %s", link_target);
+      }
     } else if (files[i].stat_info.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH)) {
       printf("*");
     }
@@ -160,8 +172,9 @@ int process_directory(const char *dir_path) {
     snprintf(files[file_count].full_path, MAX_PATH, "%s/%s", dir_path,
              entry->d_name);
 
-    if (stat(files[file_count].full_path, &files[file_count].stat_info) == -1) {
-      perror("stat");
+    if (lstat(files[file_count].full_path, &files[file_count].stat_info) ==
+        -1) {
+      perror("lstat");
       continue;
     }
 
