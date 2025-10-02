@@ -10,7 +10,7 @@ static void usage(const char *prog) {
 static int grep_stream(FILE *fp, const char *name, const char *pattern) {
   size_t cap = 0;
   char *line = NULL;
-  ssize_t n;
+  size_t n;
   int ret = 0;
 
   while ((n = getline(&line, &cap, fp)) != -1) {
