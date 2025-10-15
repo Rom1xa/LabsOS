@@ -58,3 +58,6 @@ dkms.conf
 mycat
 mygrep
 myls
+mychmod
+main
+*.txt
