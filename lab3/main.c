@@ -6,8 +6,6 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-static volatile sig_atomic_t signal_received = 0;
-
 void cleanup_handler(void) {
   printf("--- [atexit handler]: Процесс с PID %d завершает работу. ---\n",
          getpid());
