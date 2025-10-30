@@ -60,4 +60,6 @@ mygrep
 myls
 mychmod
 main
+archiver
 *.txt
+*.docx
