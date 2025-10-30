@@ -26,31 +26,125 @@ static ssize_t read_full(int fd, void *buf, size_t count);
 static int write_full(int fd, const void *buf, size_t count);
 
 static int write_header(int fd, const struct entry_header *h) {
-  if (write_full(fd, &h->name_len, sizeof(h->name_len)) < 0) return -1;
-  if (write_full(fd, &h->content_len, sizeof(h->content_len)) < 0) return -1;
-  if (write_full(fd, &h->mode, sizeof(h->mode)) < 0) return -1;
-  if (write_full(fd, &h->uid, sizeof(h->uid)) < 0) return -1;
-  if (write_full(fd, &h->gid, sizeof(h->gid)) < 0) return -1;
-  if (write_full(fd, &h->mtime, sizeof(h->mtime)) < 0) return -1;
-  if (write_full(fd, &h->deleted, sizeof(h->deleted)) < 0) return -1;
+  if (write_full(fd, &h->name_len, sizeof(h->name_len)) < 0)
+    return -1;
+  if (write_full(fd, &h->content_len, sizeof(h->content_len)) < 0)
+    return -1;
+  if (write_full(fd, &h->mode, sizeof(h->mode)) < 0)
+    return -1;
+  if (write_full(fd, &h->uid, sizeof(h->uid)) < 0)
+    return -1;
+  if (write_full(fd, &h->gid, sizeof(h->gid)) < 0)
+    return -1;
+  if (write_full(fd, &h->mtime, sizeof(h->mtime)) < 0)
+    return -1;
+  if (write_full(fd, &h->deleted, sizeof(h->deleted)) < 0)
+    return -1;
   return 0;
 }
 
-static int read_header(int fd, struct entry_header *h, ssize_t *bytes_read_out) {
+static int read_header(int fd, struct entry_header *h,
+                       ssize_t *bytes_read_out) {
   ssize_t total = 0;
   ssize_t r;
   r = read_full(fd, &h->name_len, sizeof(h->name_len));
-  if (r == 0) { if (bytes_read_out) *bytes_read_out = 0; return 0; }
-  if (r < 0) { if (bytes_read_out) *bytes_read_out = r; return -1; }
+  if (r == 0) {
+    if (bytes_read_out)
+      *bytes_read_out = 0;
+    return 0;
+  }
+  if (r < 0) {
+    if (bytes_read_out)
+      *bytes_read_out = r;
+    return -1;
+  }
   total += r;
-  if ((size_t)r < sizeof(h->name_len)) { if (bytes_read_out) *bytes_read_out = total; errno = EINVAL; return -1; }
-  r = read_full(fd, &h->content_len, sizeof(h->content_len)); if (r <= 0) { if (bytes_read_out) *bytes_read_out = r; return -1; } total += r; if ((size_t)r < sizeof(h->content_len)) { if (bytes_read_out) *bytes_read_out = total; errno = EINVAL; return -1; }
-  r = read_full(fd, &h->mode, sizeof(h->mode)); if (r <= 0) { if (bytes_read_out) *bytes_read_out = r; return -1; } total += r; if ((size_t)r < sizeof(h->mode)) { if (bytes_read_out) *bytes_read_out = total; errno = EINVAL; return -1; }
-  r = read_full(fd, &h->uid, sizeof(h->uid)); if (r <= 0) { if (bytes_read_out) *bytes_read_out = r; return -1; } total += r; if ((size_t)r < sizeof(h->uid)) { if (bytes_read_out) *bytes_read_out = total; errno = EINVAL; return -1; }
-  r = read_full(fd, &h->gid, sizeof(h->gid)); if (r <= 0) { if (bytes_read_out) *bytes_read_out = r; return -1; } total += r; if ((size_t)r < sizeof(h->gid)) { if (bytes_read_out) *bytes_read_out = total; errno = EINVAL; return -1; }
-  r = read_full(fd, &h->mtime, sizeof(h->mtime)); if (r <= 0) { if (bytes_read_out) *bytes_read_out = r; return -1; } total += r; if ((size_t)r < sizeof(h->mtime)) { if (bytes_read_out) *bytes_read_out = total; errno = EINVAL; return -1; }
-  r = read_full(fd, &h->deleted, sizeof(h->deleted)); if (r <= 0) { if (bytes_read_out) *bytes_read_out = r; return -1; } total += r; if ((size_t)r < sizeof(h->deleted)) { if (bytes_read_out) *bytes_read_out = total; errno = EINVAL; return -1; }
-  if (bytes_read_out) *bytes_read_out = total;
+  if ((size_t)r < sizeof(h->name_len)) {
+    if (bytes_read_out)
+      *bytes_read_out = total;
+    errno = EINVAL;
+    return -1;
+  }
+  r = read_full(fd, &h->content_len, sizeof(h->content_len));
+  if (r <= 0) {
+    if (bytes_read_out)
+      *bytes_read_out = r;
+    return -1;
+  }
+  total += r;
+  if ((size_t)r < sizeof(h->content_len)) {
+    if (bytes_read_out)
+      *bytes_read_out = total;
+    errno = EINVAL;
+    return -1;
+  }
+  r = read_full(fd, &h->mode, sizeof(h->mode));
+  if (r <= 0) {
+    if (bytes_read_out)
+      *bytes_read_out = r;
+    return -1;
+  }
+  total += r;
+  if ((size_t)r < sizeof(h->mode)) {
+    if (bytes_read_out)
+      *bytes_read_out = total;
+    errno = EINVAL;
+    return -1;
+  }
+  r = read_full(fd, &h->uid, sizeof(h->uid));
+  if (r <= 0) {
+    if (bytes_read_out)
+      *bytes_read_out = r;
+    return -1;
+  }
+  total += r;
+  if ((size_t)r < sizeof(h->uid)) {
+    if (bytes_read_out)
+      *bytes_read_out = total;
+    errno = EINVAL;
+    return -1;
+  }
+  r = read_full(fd, &h->gid, sizeof(h->gid));
+  if (r <= 0) {
+    if (bytes_read_out)
+      *bytes_read_out = r;
+    return -1;
+  }
+  total += r;
+  if ((size_t)r < sizeof(h->gid)) {
+    if (bytes_read_out)
+      *bytes_read_out = total;
+    errno = EINVAL;
+    return -1;
+  }
+  r = read_full(fd, &h->mtime, sizeof(h->mtime));
+  if (r <= 0) {
+    if (bytes_read_out)
+      *bytes_read_out = r;
+    return -1;
+  }
+  total += r;
+  if ((size_t)r < sizeof(h->mtime)) {
+    if (bytes_read_out)
+      *bytes_read_out = total;
+    errno = EINVAL;
+    return -1;
+  }
+  r = read_full(fd, &h->deleted, sizeof(h->deleted));
+  if (r <= 0) {
+    if (bytes_read_out)
+      *bytes_read_out = r;
+    return -1;
+  }
+  total += r;
+  if ((size_t)r < sizeof(h->deleted)) {
+    if (bytes_read_out)
+      *bytes_read_out = total;
+    errno = EINVAL;
+    return -1;
+  }
+  if (bytes_read_out)
+    *bytes_read_out = total;
   return 1;
 }
 
@@ -112,8 +206,13 @@ static int list_archive(const char *arch_path) {
   while (1) {
     ssize_t r = 0;
     int rh = read_header(fd, &hdr, &r);
-    if (rh == 0) break;
-    if (rh < 0) { perror("read header"); close(fd); return 1; }
+    if (rh == 0)
+      break;
+    if (rh < 0) {
+      perror("read header");
+      close(fd);
+      return 1;
+    }
 
     if (hdr.name_len == 0 || hdr.name_len > (1u << 20)) {
       fprintf(stderr, "corrupt archive (name_len)\n");
@@ -183,8 +282,15 @@ static int rewrite_without(const char *arch_path, const char *remove_name,
   while (1) {
     ssize_t r = 0;
     int rh = read_header(in_fd, &hdr, &r);
-    if (rh == 0) break;
-    if (rh < 0) { fprintf(stderr, "corrupt archive while copy\n"); close(in_fd); close(out_fd); unlink(tmp_path); return 1; }
+    if (rh == 0)
+      break;
+    if (rh < 0) {
+      fprintf(stderr, "corrupt archive while copy\n");
+      close(in_fd);
+      close(out_fd);
+      unlink(tmp_path);
+      return 1;
+    }
 
     if (hdr.name_len == 0 || hdr.name_len > (1u << 20)) {
       fprintf(stderr, "corrupt archive (name_len)\n");
@@ -348,8 +454,13 @@ static int extract_file(const char *arch_path, const char *want_name) {
   while (1) {
     ssize_t r = 0;
     int rh = read_header(fd, &hdr, &r);
-    if (rh == 0) break;
-    if (rh < 0) { fprintf(stderr, "corrupt archive\n"); close(fd); return 1; }
+    if (rh == 0)
+      break;
+    if (rh < 0) {
+      fprintf(stderr, "corrupt archive\n");
+      close(fd);
+      return 1;
+    }
     if (hdr.name_len == 0 || hdr.name_len > (1u << 20)) {
       fprintf(stderr, "corrupt archive (name_len)\n");
       close(fd);
