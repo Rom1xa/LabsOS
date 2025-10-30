@@ -116,7 +116,7 @@ int parse_symbolic_mode(const char *mode_str, mode_t current_mode) {
 mode_t get_file_mode(const char *filename) {
   struct stat st;
   if (stat(filename, &st) == -1) {
-    return 0;
+    return (mode_t)-1;
   }
   return st.st_mode & 0777;
 }
@@ -138,7 +138,7 @@ int main(int argc, char *argv[]) {
     }
   } else {
     mode_t current_mode = get_file_mode(argv[2]);
-    if (current_mode == 0) {
+    if (current_mode == (mode_t)-1) {
       fprintf(stderr, "mychmod: не удалось получить права файла '%s': %s\n",
               argv[2], strerror(errno));
       return 1;
@@ -170,3 +170,5 @@ int main(int argc, char *argv[]) {
 
   return 0;
 }
+
+/* u+x */
