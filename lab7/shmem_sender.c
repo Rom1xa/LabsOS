@@ -6,13 +6,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
 
-#define SHM_NAME "/lab7_shm"
+#define SHM_KEY 0x1234
 #define SEM_NAME "/lab7_prod_lock"
 
 struct payload {
@@ -27,13 +27,19 @@ static void die(const char *msg) {
   exit(EXIT_FAILURE);
 }
 
-static int shm_fd = -1;
+static int shm_id = -1;
 static sem_t *sem_lock = SEM_FAILED;
 static struct payload *data = NULL;
 
 static void cleanup(void) {
-  if (data) munmap(data, sizeof(*data));
-  if (shm_fd >= 0) close(shm_fd);
+  if (data) {
+    shmdt(data);
+    data = NULL;
+  }
+  if (shm_id >= 0) {
+    shmctl(shm_id, IPC_RMID, NULL);
+    shm_id = -1;
+  }
   if (sem_lock != SEM_FAILED) {
     sem_post(sem_lock);
     sem_close(sem_lock);
@@ -63,13 +69,11 @@ int main() {
     die("sem_trywait");
   }
 
-  shm_fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0666);
-  if (shm_fd == -1) die("shm_open");
-  if (ftruncate(shm_fd, sizeof(struct payload)) == -1) die("ftruncate");
+  shm_id = shmget(SHM_KEY, sizeof(struct payload), IPC_CREAT | 0666);
+  if (shm_id == -1) die("shmget");
 
-  data = mmap(NULL, sizeof(struct payload), PROT_READ | PROT_WRITE, MAP_SHARED,
-              shm_fd, 0);
-  if (data == MAP_FAILED) die("mmap");
+  data = shmat(shm_id, NULL, 0);
+  if (data == (void *)-1) die("shmat");
 
   memset(data, 0, sizeof(*data));
 

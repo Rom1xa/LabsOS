@@ -14,7 +14,8 @@ $(RECEIVER): shmem_receiver.c
 
 clean:
 	rm -f $(SENDER) $(RECEIVER)
-	rm -f /dev/shm/lab7_shm /dev/shm/sem.lab7_prod_lock
+	ipcrm -M 4660 >/dev/null 2>&1 || true
+	rm -f /dev/shm/sem.lab7_prod_lock
 
 .PHONY: all clean
 

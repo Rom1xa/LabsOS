@@ -4,13 +4,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
 
-#define SHM_NAME "/lab7_shm"
+#define SHM_KEY 0x1234
 
 struct payload {
   pid_t pid;
@@ -25,16 +25,14 @@ static void die(const char *msg) {
 }
 
 int main() {
-  int fd = shm_open(SHM_NAME, O_RDONLY, 0666);
-  if (fd == -1) {
+  int shm_id = shmget(SHM_KEY, sizeof(struct payload), 0666);
+  if (shm_id == -1) {
     fprintf(stderr, "Receiver: shared memory not found, start sender first.\n");
     return EXIT_FAILURE;
   }
 
-  struct payload *data =
-      mmap(NULL, sizeof(struct payload), PROT_READ, MAP_SHARED, fd, 0);
-  if (data == MAP_FAILED) die("mmap");
-  close(fd);
+  struct payload *data = shmat(shm_id, NULL, SHM_RDONLY);
+  if (data == (void *)-1) die("shmat");
 
   for (;;) {
     time_t now = time(NULL);
@@ -45,7 +43,7 @@ int main() {
     sleep(1);
   }
 
-  munmap(data, sizeof(*data));
+  shmdt(data);
   return 0;
 }
 
