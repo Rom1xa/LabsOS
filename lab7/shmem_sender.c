@@ -46,7 +46,7 @@ static void on_sigint(int sig) {
   _exit(EXIT_SUCCESS);
 }
 
-int main(void) {
+int main() {
   struct sigaction sa = {.sa_handler = on_sigint};
   sigemptyset(&sa.sa_mask);
   sigaction(SIGINT, &sa, NULL);

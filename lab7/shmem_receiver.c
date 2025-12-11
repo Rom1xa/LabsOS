@@ -24,7 +24,7 @@ static void die(const char *msg) {
   exit(EXIT_FAILURE);
 }
 
-int main(void) {
+int main() {
   int fd = shm_open(SHM_NAME, O_RDONLY, 0666);
   if (fd == -1) {
     fprintf(stderr, "Receiver: shared memory not found, start sender first.\n");

@@ -14,7 +14,7 @@ static void die(const char *msg) {
   exit(EXIT_FAILURE);
 }
 
-int main(void) {
+int main() {
   if (mkfifo(FIFO_PATH, 0666) < 0 && errno != EEXIST) die("mkfifo");
 
   int fd = open(FIFO_PATH, O_RDONLY);

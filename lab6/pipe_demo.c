@@ -12,7 +12,7 @@ static void die(const char *msg) {
   exit(EXIT_FAILURE);
 }
 
-int main(void) {
+int main() {
   int fds[2];
   if (pipe(fds) == -1) die("pipe");
 
