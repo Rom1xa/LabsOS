@@ -45,7 +45,8 @@ void *reader_thread(void *arg) {
     pthread_mutex_unlock(&g.mtx);
     printf("reader %lu sees counter=%lu buf=\"%s\"\n",
            (unsigned long)pthread_self(), c, local);
-    if (done) break;
+    if (done)
+      break;
     usleep(150000);
   }
   return NULL;
@@ -67,7 +68,7 @@ int main() {
   }
 
   pthread_join(writer, NULL);
-  for (int i = 0; i < READER_COUNT; ++i) pthread_join(readers[i], NULL);
+  for (int i = 0; i < READER_COUNT; ++i)
+    pthread_join(readers[i], NULL);
   return 0;
 }
-
