@@ -53,17 +53,17 @@ static void on_sigint(int sig) {
   _exit(EXIT_SUCCESS);
 }
 
-static void sem_wait_op(int semid) {
+static void sem_lock(int semid) {
   struct sembuf op = {.sem_num = 0, .sem_op = -1, .sem_flg = 0};
   if (semop(semid, &op, 1) == -1) {
-    die("semop wait");
+    die("semop lock");
   }
 }
 
-static void sem_post_op(int semid) {
+static void sem_unlock(int semid) {
   struct sembuf op = {.sem_num = 0, .sem_op = 1, .sem_flg = 0};
   if (semop(semid, &op, 1) == -1) {
-    die("semop post");
+    die("semop unlock");
   }
 }
 
@@ -92,7 +92,7 @@ int main() {
   memset(data, 0, sizeof(*data));
 
   for (;;) {
-    sem_wait_op(sem_id);
+    sem_lock(sem_id);
 
     time_t now = time(NULL);
     data->pid = getpid();
@@ -101,7 +101,7 @@ int main() {
              "Time: %s, PID: %d", ctime(&now), getpid());
     data->message[strlen(data->message) - 1] = '\0';
 
-    sem_post_op(sem_id);
+    sem_unlock(sem_id);
 
     printf("Sender: sent time=%lld pid=%d\n", (long long)now, getpid());
     fflush(stdout);

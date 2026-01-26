@@ -38,17 +38,17 @@ static void on_sigint(int sig) {
   _exit(EXIT_SUCCESS);
 }
 
-static void sem_wait_op(int semid) {
+static void sem_lock(int semid) {
   struct sembuf op = {.sem_num = 0, .sem_op = -1, .sem_flg = 0};
   if (semop(semid, &op, 1) == -1) {
-    die("semop wait");
+    die("semop lock");
   }
 }
 
-static void sem_post_op(int semid) {
+static void sem_unlock(int semid) {
   struct sembuf op = {.sem_num = 0, .sem_op = 1, .sem_flg = 0};
   if (semop(semid, &op, 1) == -1) {
-    die("semop post");
+    die("semop unlock");
   }
 }
 
@@ -80,7 +80,7 @@ int main() {
   if (data == (void *)-1) die("shmat");
 
   for (;;) {
-    sem_wait_op(sem_id);
+    sem_lock(sem_id);
 
     time_t now = time(NULL);
     pid_t my_pid = getpid();
@@ -90,7 +90,7 @@ int main() {
     strncpy(received_msg, data->message, sizeof(received_msg) - 1);
     received_msg[sizeof(received_msg) - 1] = '\0';
 
-    sem_post_op(sem_id);
+    sem_unlock(sem_id);
 
     printf("Receiver: my_time=%lld my_pid=%d | received: pid=%d time=%lld message=\"%s\"\n",
            (long long)now, my_pid, sender_pid, (long long)sender_time, received_msg);
